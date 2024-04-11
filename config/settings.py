@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # apps
     "apps.users",
+    # third_party packages
+    "phonenumber_field"
 
 ]
 
