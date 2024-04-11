@@ -57,11 +57,13 @@ class User(AbstractUser):
 
 
 class OTPVerification(models.Model):
+    id = models.UUIDField(_("ID"), primary_key=True, default=uuid.uuid4(), unique=True, editable=False)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="otp_verification",
     )
+    otp_code = models.CharField(_("OTP code"), max_length=6, blank=True, default="")
     secret_key = models.CharField(max_length=50, unique=True, blank=True)
     verified = models.BooleanField(default=False)
     is_expired = models.BooleanField(default=False)
@@ -69,8 +71,8 @@ class OTPVerification(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _("otp_verification")
-        verbose_name_plural = _("otp_verifications")
+        verbose_name = _("OTP Verification")
+        verbose_name_plural = _("OTP Verifications")
     
     def __str__(self):
         return str(self.user)

@@ -1,9 +1,8 @@
 from django.contrib import admin
-from apps.users.models import User
+from apps.users.models import User, OTPVerification
 from django.utils.translation import gettext_lazy as _
 
 
-# Register your models here.
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -40,3 +39,11 @@ class UserAdmin(admin.ModelAdmin):
     )
     list_display = ("id", "phone_number", "first_name", "last_name", "is_staff",)
     ordering = ("phone_number",)
+
+
+@admin.register(OTPVerification)
+class OTPVerificationAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "otp_code", "secret_key", "verified", "is_expired", "created_at")
+
+    def user(self, obj):
+        return obj.user.full_name
