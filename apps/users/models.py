@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 import uuid
+import pyotp
+from datetime import timedelta
+from django.utils import timezone
 
 class CustomUserManager(UserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
@@ -51,3 +54,50 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name}"
+
+
+class OTPVerification(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="otp_verification",
+    )
+    secret_key = models.CharField(max_length=50, unique=True, blank=True)
+    verified = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("otp_verification")
+        verbose_name_plural = _("otp_verifications")
+    
+    def __str__(self):
+        return str(self.user)
+    
+    @property
+    def generate_secret_key(self):
+        """Generate a secret key"""
+        return pyotp.random_base32()
+    
+    @property
+    def is_random_secret_key_verified(self):
+        return self.secret_key == self.generate_secret_key
+    
+    def generate_otp(self):
+        if self.is_random_secret_key_verified:
+            return pyotp.TOTP(self.secret_key)
+    
+    def get_otp(self):
+        return self.generate_otp().now()
+    
+    def has_expired(self):
+        """
+        Check if OTP is expired
+        """
+        return self.created_at + timedelta(seconds=self.generate_otp().interval) < timezone.now()
+    
+    def save(self, *args, **kwargs):
+        if not self.secret_key:
+           self.secret_key = self.generate_secret_key
+        super(OTPVerification, self).save(*args, **kwargs)
