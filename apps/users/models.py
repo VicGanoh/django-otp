@@ -37,7 +37,7 @@ class User(AbstractUser):
     last_name = models.CharField(_("Last name"), max_length=150, blank=True)
     phone_number = PhoneNumberField(_("Phone number"), unique=True)
     username = None
-
+    
     objects = CustomUserManager()
 
     USERNAME_FIELD = "phone_number"
@@ -77,14 +77,13 @@ class OTPVerification(models.Model):
     def __str__(self):
         return str(self.user)
     
-    @property
     def generate_secret_key(self):
         """Generate a secret key"""
         return pyotp.random_base32()
-    
+
     @property
     def is_random_secret_key_verified(self):
-        return self.secret_key == self.generate_secret_key
+        return self.secret_key == self.generate_secret_key()
     
     def generate_otp(self):
         if self.is_random_secret_key_verified:
@@ -99,6 +98,13 @@ class OTPVerification(models.Model):
         """
         return self.created_at + timedelta(seconds=self.generate_otp().interval) < timezone.now()
     
+    @classmethod
+    def create_otp_verification(cls, user: User):
+        """
+        Create a new OTP verification for the given user.
+        """
+        return cls.objects.create(user=user)
+
     def save(self, *args, **kwargs):
         if not self.secret_key:
            self.secret_key = self.generate_secret_key
