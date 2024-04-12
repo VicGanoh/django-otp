@@ -87,12 +87,26 @@ class OTPVerification(models.Model):
     
     def generate_otp(self):
         if self.is_random_secret_key_verified:
-            return pyotp.TOTP(self.secret_key)
+            return pyotp.TOTP(self.secret_key, interval=180)
     
     def get_otp(self):
+        """
+        Get the current otp
+        """
         return self.generate_otp().now()
     
-    def has_expired(self):
+    def verify_otp(self, otp):
+        """
+        Verify the provided OTP against the generated OTP.
+        """
+        if self.generate_otp().verify(otp):
+            self.verified = True
+        else:
+            self.verified = False
+        self.save()
+    
+    @property
+    def has_expired(self) -> bool:
         """
         Check if OTP is expired
         """
@@ -108,4 +122,6 @@ class OTPVerification(models.Model):
     def save(self, *args, **kwargs):
         if not self.secret_key:
            self.secret_key = self.generate_secret_key
+        if self.has_expired:
+            self.is_expired = self.has_expired
         super(OTPVerification, self).save(*args, **kwargs)
