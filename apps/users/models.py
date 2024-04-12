@@ -61,12 +61,10 @@ class OTPVerification(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="otp_verification",
+        related_name="otp_verifications",
     )
-    otp_code = models.CharField(_("OTP code"), max_length=6, blank=True, default="")
     secret_key = models.CharField(max_length=50, unique=True, blank=True)
     verified = models.BooleanField(default=False)
-    is_expired = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -80,13 +78,9 @@ class OTPVerification(models.Model):
     def generate_secret_key(self):
         """Generate a secret key"""
         return pyotp.random_base32()
-
-    @property
-    def is_random_secret_key_verified(self):
-        return self.secret_key == self.generate_secret_key()
     
     def generate_otp(self):
-        if self.is_random_secret_key_verified:
+        if self.secret_key:
             return pyotp.TOTP(self.secret_key, interval=180)
     
     def get_otp(self):
@@ -105,7 +99,6 @@ class OTPVerification(models.Model):
             self.verified = False
         self.save()
     
-    @property
     def has_expired(self) -> bool:
         """
         Check if OTP is expired
@@ -121,7 +114,5 @@ class OTPVerification(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.secret_key:
-           self.secret_key = self.generate_secret_key
-        if self.has_expired:
-            self.is_expired = self.has_expired
+           self.secret_key = self.generate_secret_key()
         super(OTPVerification, self).save(*args, **kwargs)

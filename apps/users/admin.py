@@ -43,7 +43,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(OTPVerification)
 class OTPVerificationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "otp_code", "secret_key", "verified", "is_expired", "created_at")
+    list_display = ("id", "user", "secret_key", "verified", "created_at")
 
     def user(self, obj):
         return obj.user.full_name
