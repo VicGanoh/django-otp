@@ -28,9 +28,9 @@ class UserAdmin(admin.ModelAdmin):
             {
                 "classes": ("wide",),
                 "fields": (
-                    "phone_number",
                     "first_name",
                     "last_name",
+                    "phone_number",
                     "password1",
                     "password2",
                 ),
@@ -39,6 +39,7 @@ class UserAdmin(admin.ModelAdmin):
     )
     list_display = ("id", "phone_number", "first_name", "last_name", "is_staff",)
     ordering = ("phone_number",)
+    search_fields = ("first_name", "last_name", )
 
 
 @admin.register(OTPVerification)
