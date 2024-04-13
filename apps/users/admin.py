@@ -5,8 +5,6 @@ from apps.users.forms import UserAdminChangeForm, UserAdminCreationForm
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    form = UserAdminChangeForm
-    add_form = UserAdminCreationForm
 
     fieldsets = (
         (None, {"fields": ("phone_number", "password")}),
@@ -26,19 +24,20 @@ class UserAdmin(admin.ModelAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
-    User.USERNAME_FIELD = "phone_number"
-
     add_fieldsets = (
         (
             None,
             {
                 "classes": ("wide",),
                 "fields": (
-                    "first_name",
-                    "last_name",
                     "phone_number",
                     "password1",
                     "password2",
+                    "first_name",
+                    "last_name",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
                 ),
             },
         ),
