@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 import uuid
@@ -9,11 +9,15 @@ from django.utils import timezone
 from .managers import CustomUserManager
 
 
-class User(AbstractUser):
+class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(_("ID"), primary_key=True, default=uuid.uuid4(), unique=True, editable=False)
     first_name = models.CharField(_("First name"), max_length=150, blank=True)
     last_name = models.CharField(_("Last name"), max_length=150, blank=True)
     phone_number = PhoneNumberField(_("Phone number"), unique=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(default=timezone.now)
+    
     username = None
 
     USERNAME_FIELD = "phone_number"
