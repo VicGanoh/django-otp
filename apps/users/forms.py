@@ -1,23 +1,52 @@
-from django.contrib.auth import forms as admin_forms
-from django.contrib.auth import get_user_model
+from typing import Any
+from django import forms
 from django.utils.translation import gettext_lazy as _
-
-User = get_user_model()
-
-class UserAdminChangeForm(admin_forms.UserChangeForm):
-    class Meta(admin_forms.UserChangeForm.Meta):
-        model = User
-        fields = ("phone_number", "first_name", "last_name", "is_active", "is_staff", "is_superuser")
+from .models import User
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 
-class UserAdminCreationForm(admin_forms.UserCreationForm):
+class UserChangeForm(forms.ModelForm):
+    """A form for updating users. Includes all the fields on
+    the user, but replaces the password field with admin's
+    disabled password hash display field.
     """
-    Form for User Creation in the Admin Area.
-    """
+    password = ReadOnlyPasswordHashField()
 
-    class Meta(admin_forms.UserCreationForm.Meta):
+    class Meta:
         model = User
-        fields = ("phone_number", "first_name", "last_name", "is_active", "is_staff", "is_superuser")
+        fields = ("phone_number", "password", "first_name", "last_name", "is_active", "is_admin")
+
+
+class UserCreationForm(forms.ModelForm):
+    """
+    A form for creating new users. Includes all the required
+    fields, plus a repeated password.
+    """
+    password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Password confirmation", widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "phone_number", "is_active", "is_staff", "is_superuser")
         error_messages = {
             "phone_number": {"unique": _("This phone_number has already been taken.")},
         }
+
+    def clean_password2(self):
+        # Check that the two password entries match
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match")
+        return password2
+    
+    def save(self, commit: True):
+        # Save the provided password in hashed format
+        user = super().save(commit=True)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+        
