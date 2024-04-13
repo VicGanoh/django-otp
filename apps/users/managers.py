@@ -6,7 +6,7 @@ class CustomUserManager(UserManager):
 
     def _create_user(self, phone_number, password=None, **extra_fields):
         """
-        Create and save a user with the given email and password.
+        Create and save a user with the given phone number and password.
         """
         if not phone_number:
             msg = "The given phone number must be set"
