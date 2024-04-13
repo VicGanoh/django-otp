@@ -1,10 +1,13 @@
 from django.contrib import admin
 from apps.users.models import User, OTPVerification
 from django.utils.translation import gettext_lazy as _
-
+from apps.users.forms import UserAdminChangeForm, UserAdminCreationForm
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    form = UserAdminChangeForm
+    add_form = UserAdminCreationForm
+
     fieldsets = (
         (None, {"fields": ("phone_number", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name")}),
@@ -22,15 +25,18 @@ class UserAdmin(admin.ModelAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+
+    User.USERNAME_FIELD = "phone_number"
+
     add_fieldsets = (
         (
             None,
             {
                 "classes": ("wide",),
                 "fields": (
-                    "phone_number",
                     "first_name",
                     "last_name",
+                    "phone_number",
                     "password1",
                     "password2",
                 ),

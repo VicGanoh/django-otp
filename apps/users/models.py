@@ -6,29 +6,7 @@ import uuid
 import pyotp
 from datetime import timedelta
 from django.utils import timezone
-
-class CustomUserManager(UserManager):
-    def create_user(self, phone_number, password=None, **extra_fields):
-        if not phone_number:
-            raise ValueError("Please provide a phone number")
-
-        user = self.model(
-            phone_number=phone_number,
-            **extra_fields,
-        )
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, phone_number, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-
-        user = self.create_user(phone_number, password=password, **extra_fields)
-
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
+from .managers import CustomUserManager
 
 
 class User(AbstractUser):
@@ -37,11 +15,11 @@ class User(AbstractUser):
     last_name = models.CharField(_("Last name"), max_length=150, blank=True)
     phone_number = PhoneNumberField(_("Phone number"), unique=True)
     username = None
-    
-    objects = CustomUserManager()
 
     USERNAME_FIELD = "phone_number"
     REQUIRED_FIELDS = ["first_name", "last_name",]
+    
+    objects = CustomUserManager()
 
     class Meta:
         db_table = "users"
@@ -105,12 +83,12 @@ class OTPVerification(models.Model):
         """
         return self.created_at + timedelta(seconds=self.generate_otp().interval) < timezone.now()
     
-    @classmethod
-    def create_otp_verification(cls, user: User):
-        """
-        Create a new OTP verification for the given user.
-        """
-        return cls.objects.create(user=user)
+    # @classmethod
+    # def create_otp_verification(cls, user: User):
+    #     """
+    #     Create a new OTP verification for the given user.
+    #     """
+    #     return cls.objects.create(user=user)
 
     def save(self, *args, **kwargs):
         if not self.secret_key:
