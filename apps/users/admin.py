@@ -1,10 +1,11 @@
+from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 from apps.users.models import User, OTPVerification
 from django.utils.translation import gettext_lazy as _
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("phone_number", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name")}),
