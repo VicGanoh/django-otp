@@ -83,12 +83,12 @@ class OTPVerification(models.Model):
         """
         return self.created_at + timedelta(seconds=self.generate_otp().interval) < timezone.now()
     
-    # @classmethod
-    # def create_otp_verification(cls, user: User):
-    #     """
-    #     Create a new OTP verification for the given user.
-    #     """
-    #     return cls.objects.create(user=user)
+    @classmethod
+    def create_otp_verification(cls, user: User):
+        """
+        Create a new OTP verification for the given user.
+        """
+        return cls.objects.create(user=user)
 
     def save(self, *args, **kwargs):
         if not self.secret_key:

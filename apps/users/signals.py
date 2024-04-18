@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 @receiver(post_save, sender=User)
 def create_otp_verification(sender, instance, created, **kwargs):
     if created:
-       otp_verification = OTPVerification.objects.create(user=instance)
+       otp_verification = OTPVerification.create_otp_verification(instance)
        otp_verification.generate_otp()
        otp_code = otp_verification.get_otp()
-
-       logger.info("User OTP successfully created with code: %s", otp_code)
-       logger.info("OTP verfied: %r", otp_verification.verify_otp(otp_code))
+       
+       print(f"User OTP successfully created with code: {otp_code}")
+       print(f"OTP verfied: {otp_verification.verify_otp(otp_code)}")
