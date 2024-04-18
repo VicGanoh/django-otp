@@ -15,4 +15,4 @@ def create_otp_verification(sender, instance, created, **kwargs):
        otp_code = otp_verification.get_otp()
        
        print(f"User OTP successfully created with code: {otp_code}")
-       print(f"OTP verfied: {otp_verification.verify_otp(otp_code)}")
+       print(f"OTP verfied: {otp_verification.is_verified(otp_code)}")

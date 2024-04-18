@@ -67,15 +67,12 @@ class OTPVerification(models.Model):
         """
         return self.generate_otp().now()
     
-    def verify_otp(self, otp):
-        """
-        Verify the provided OTP against the generated OTP.
-        """
-        if self.generate_otp().verify(otp):
-            self.verified = True
-        else:
-            self.verified = False
+    def is_verified(self, code):
+        """Verify the provided code against the generated code."""
+        is_verified = self.generate_otp().verify(code)
+        self.verified = is_verified
         self.save()
+        return is_verified
     
     def has_expired(self) -> bool:
         """
